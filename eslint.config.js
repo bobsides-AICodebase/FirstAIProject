@@ -11,7 +11,7 @@ export default [
     extends: [js.configs.recommended],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: globals.node,
     },
   },
   {
