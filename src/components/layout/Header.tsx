@@ -20,13 +20,13 @@ export function Header() {
           <span className="hidden sm:inline"></span>
         </Link>
         <ul className="flex flex-wrap items-center gap-4">
-          <li>
-            <Link to="/" className="text-gray-600 hover:text-gray-900">
-              Home
-            </Link>
-          </li>
           {user ? (
             <>
+              <li>
+                <Link to="/" className="text-gray-600 hover:text-gray-900">
+                  Home
+                </Link>
+              </li>
               <li>
                 <Link to="/app" className="text-gray-600 hover:text-gray-900">
                   App
@@ -45,13 +45,39 @@ export function Header() {
           ) : (
             <>
               <li>
-                <Link to="/login" className="text-gray-600 hover:text-gray-900">
+                <Link to="/" className="text-gray-600 hover:text-gray-900">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/what-is-cognify" className="text-gray-600 hover:text-gray-900">
+                  What is Cognify
+                </Link>
+              </li>
+              <li>
+                <Link to="/who-its-for" className="text-gray-600 hover:text-gray-900">
+                  Who it&apos;s for
+                </Link>
+              </li>
+              <li>
+                <Link to="/how-it-works" className="text-gray-600 hover:text-gray-900">
+                  How it works
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/login"
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
                   Login
                 </Link>
               </li>
               <li>
-                <Link to="/register" className="text-gray-600 hover:text-gray-900">
-                  Register
+                <Link
+                  to="/register"
+                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                >
+                  Start training
                 </Link>
               </li>
             </>
