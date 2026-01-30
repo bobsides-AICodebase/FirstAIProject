@@ -26,9 +26,7 @@ export function ProtectedRoute() {
     )
   }
 
-  if (!user) {
-    return null
-  }
+  if (!user) return <div className="p-6">Redirecting to login…</div>
 
   return <Outlet />
 }
