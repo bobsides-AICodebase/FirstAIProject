@@ -1,8 +1,19 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
+
+const HOW_TITLE = 'How Cognify Works | The Communication Gym & Deliberate Practice'
+const HOW_DESCRIPTION =
+  'Cognify works through deliberate practice: short speaking reps in the Communication Gym, frameworks without scripting, immediate feedback. Improvement that transfers to real conversations.'
 
 export function HowItWorks() {
   return (
     <div className="min-w-0">
+      <Helmet>
+        <title>{HOW_TITLE}</title>
+        <meta name="description" content={HOW_DESCRIPTION} />
+        <meta property="og:title" content={HOW_TITLE} />
+        <meta property="og:description" content={HOW_DESCRIPTION} />
+      </Helmet>
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-b from-indigo-50/50 to-transparent px-4 py-16 sm:py-20">
         <div className="mx-auto max-w-6xl">

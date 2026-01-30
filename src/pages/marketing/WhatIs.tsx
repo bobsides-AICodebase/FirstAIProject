@@ -1,8 +1,19 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
+
+const WHAT_IS_TITLE = 'What is Cognify? | Communication Training & Speaking Practice'
+const WHAT_IS_DESCRIPTION =
+  'Cognify is a utility for getting better at speaking under pressure. Focus on unscripted, time-constrained moments: interviews, client and sales conversations, leadership updates. The Communication Gym—not a course.'
 
 export function WhatIs() {
   return (
     <div className="min-w-0">
+      <Helmet>
+        <title>{WHAT_IS_TITLE}</title>
+        <meta name="description" content={WHAT_IS_DESCRIPTION} />
+        <meta property="og:title" content={WHAT_IS_TITLE} />
+        <meta property="og:description" content={WHAT_IS_DESCRIPTION} />
+      </Helmet>
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-b from-indigo-50/50 to-transparent px-4 py-16 sm:py-20">
         <div className="mx-auto max-w-6xl">
@@ -10,10 +21,11 @@ export function WhatIs() {
             What is Cognify?
           </h1>
           <p className="mt-4 max-w-3xl text-lg text-gray-600">
-            A utility for getting better at speaking. Cognify is a communication training
-            platform designed to help people speak clearly in real-world situations. It
-            focuses on moments where professionals are actually evaluated: interviews,
-            client conversations, sales discussions, and leadership updates.
+            A utility for getting better at speaking under pressure. Cognify focuses on
+            the unscripted, time-constrained moments where professionals are actually
+            evaluated: interviews, client conversations, sales discussions, and leadership
+            updates. Not a course—the Communication Gym gives you repeatable speaking reps
+            and immediate feedback for deliberate practice.
           </p>
           <Link
             to="/register"
@@ -28,20 +40,16 @@ export function WhatIs() {
       <section className="px-4 py-16 sm:py-20">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-            The problem it addresses
+            Structure breaks under pressure—and people are judged by clarity in the moment.
           </h2>
           <p className="mt-4 max-w-3xl text-lg text-gray-600">
             Many capable people understand their work but struggle to explain it clearly
-            under pressure. These moments are unscripted and time-constrained, and
-            experience alone doesn’t provide enough opportunities to practice them
-            deliberately.
-          </p>
-          <p className="mt-6 max-w-3xl text-lg text-gray-600">
-            When people struggle, it’s rarely because they lack understanding. The
-            breakdown happens at the level of structure. Under pressure, people begin
-            speaking before deciding what the point is. Ideas come out in the order they’re
-            thought of, context is missing, and listeners have to work to follow the
-            message.
+            when it matters. These moments are unscripted and time-constrained; experience
+            alone doesn’t give enough deliberate practice. When people struggle, it’s
+            rarely understanding—it’s structure. Under pressure, people speak before
+            deciding the point. Ideas come out in thought order, context is missing, and
+            listeners work to follow. Cognify trains that gap: the Communication Gym
+            offers repeatable reps and immediate feedback, not a course.
           </p>
         </div>
       </section>

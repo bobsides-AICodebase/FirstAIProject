@@ -1,8 +1,19 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
+
+const HOME_TITLE = 'Cognify | Communication Training for Speaking Under Pressure'
+const HOME_DESCRIPTION =
+  'Cognify is the Communication Gym for real-time speaking under pressure. Deliberate practice for interviews, client conversations, sales, and leadership. Not a course—repeatable reps and immediate feedback.'
 
 export function Home() {
   return (
     <div className="min-w-0">
+      <Helmet>
+        <title>{HOME_TITLE}</title>
+        <meta name="description" content={HOME_DESCRIPTION} />
+        <meta property="og:title" content={HOME_TITLE} />
+        <meta property="og:description" content={HOME_DESCRIPTION} />
+      </Helmet>
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-b from-indigo-50/50 to-transparent px-4 py-16 sm:py-24">
         <div className="mx-auto max-w-6xl text-center">
@@ -10,9 +21,10 @@ export function Home() {
             One rep closer to clarity.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 sm:text-xl">
-            Cognify is a communication training platform that helps you speak clearly in
-            real-world situations—interviews, client conversations, sales discussions, and
-            leadership updates.
+            Cognify is built for real-time speaking under pressure—the unscripted,
+            time-constrained moments where you’re actually evaluated: interviews, client
+            conversations, sales discussions, and leadership updates. Not a course. A
+            place for deliberate practice.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
@@ -35,13 +47,13 @@ export function Home() {
       <section className="px-4 py-16 sm:py-20">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-            Many capable people struggle to explain clearly under pressure.
+            Structure breaks under pressure—and people are judged by clarity in the moment.
           </h2>
           <p className="mt-4 max-w-3xl text-lg text-gray-600">
-            These moments are unscripted and time-constrained. Experience alone doesn’t
-            give enough opportunities to practice them deliberately. Cognify creates a
-            place for repeatable, low-risk speaking reps that mirror real situations—so you
-            improve through repetition and feedback over time.
+            Capable people are often judged not by the quality of their thinking but by
+            how clearly they can express it when it matters. Cognify is the Communication
+            Gym: repeatable speaking reps and immediate feedback, so you practice
+            deliberately. Not a course—a system you use between real conversations.
           </p>
           <Link
             to="/how-it-works"

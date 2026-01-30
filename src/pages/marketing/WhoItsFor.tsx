@@ -1,8 +1,19 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
+
+const WHO_TITLE = 'Who Cognify Is For | Interviews, Sales, Leadership Communication'
+const WHO_DESCRIPTION =
+  'Cognify is for situations where speaking is tested and least trained: interviews, sales and client conversations, consulting and leadership, translating complex ideas. One skill: clarity under pressure.'
 
 export function WhoItsFor() {
   return (
     <div className="min-w-0">
+      <Helmet>
+        <title>{WHO_TITLE}</title>
+        <meta name="description" content={WHO_DESCRIPTION} />
+        <meta property="og:title" content={WHO_TITLE} />
+        <meta property="og:description" content={WHO_DESCRIPTION} />
+      </Helmet>
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-b from-indigo-50/50 to-transparent px-4 py-16 sm:py-20">
         <div className="mx-auto max-w-6xl">
