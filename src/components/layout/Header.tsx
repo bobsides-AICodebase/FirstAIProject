@@ -34,11 +34,18 @@ export function Header() {
               </li>
             </>
           ) : (
-            <li>
-              <Link to="/login" className="text-gray-600 hover:text-gray-900">
-                Login
-              </Link>
-            </li>
+            <>
+              <li>
+                <Link to="/login" className="text-gray-600 hover:text-gray-900">
+                  Login
+                </Link>
+              </li>
+              <li>
+                <Link to="/register" className="text-gray-600 hover:text-gray-900">
+                  Register
+                </Link>
+              </li>
+            </>
           )}
         </ul>
       </nav>

@@ -4,6 +4,7 @@ import { ProtectedRoute } from './auth/ProtectedRoute'
 import { AppHome } from './pages/AppHome'
 import { Landing } from './pages/Landing'
 import { Login } from './pages/Login'
+import { Register } from './pages/Register'
 
 export const router = createBrowserRouter([
   {
@@ -12,6 +13,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Landing /> },
       { path: 'login', element: <Login /> },
+      { path: 'register', element: <Register /> },
       {
         path: 'app',
         element: <ProtectedRoute />,
