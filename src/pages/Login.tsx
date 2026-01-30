@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 
 export function Login() {
@@ -7,6 +7,8 @@ export function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [searchParams] = useSearchParams()
+  const passwordUpdated = searchParams.get('password') === 'updated'
   const navigate = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -31,6 +33,14 @@ export function Login() {
   return (
     <div className="mx-auto max-w-sm py-8">
       <h1 className="text-3xl font-bold text-gray-900">Login</h1>
+      {passwordUpdated && (
+        <div
+          className="mt-4 rounded-md bg-green-50 px-3 py-2 text-sm text-green-800"
+          role="status"
+        >
+          Password updated. Sign in with your new password.
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
         {error && (
           <div
@@ -61,6 +71,12 @@ export function Login() {
             autoComplete="current-password"
             className="rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
+          <Link
+            to="/forgot-password"
+            className="mt-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+          >
+            Forgot password?
+          </Link>
         </label>
         <button
           type="submit"
