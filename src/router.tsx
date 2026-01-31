@@ -4,6 +4,7 @@ import { ProtectedRoute } from './auth/ProtectedRoute'
 import { AppHome } from './pages/AppHome'
 import { Train } from './pages/app/Train'
 import { History } from './pages/app/History'
+import { RepDetail } from './pages/app/RepDetail'
 import { ForgotPassword } from './pages/ForgotPassword'
 import { Home } from './pages/marketing/Home'
 import { HowItWorks } from './pages/marketing/HowItWorks'
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
           { index: true, element: <AppHome /> },
           { path: 'train', element: <Train /> },
           { path: 'history', element: <History /> },
+          { path: 'reps/:id', element: <RepDetail /> },
         ],
       },
     ],

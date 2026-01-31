@@ -13,6 +13,7 @@ export type Rep = {
   user_id: string
   scenario_id: string
   audio_path: string | null
+  audio_deleted_at?: string | null
   duration_secs: number | null
   status: 'uploading' | 'processing' | 'ready' | 'failed'
   error_message: string | null

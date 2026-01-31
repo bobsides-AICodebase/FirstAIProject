@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../auth/useAuth'
 import { supabase } from '../../lib/supabaseClient'
@@ -17,6 +17,8 @@ function extensionFromMime(mimeType: string): string {
 }
 
 export function Train() {
+  const [searchParams] = useSearchParams()
+  const scenarioFromQuery = searchParams.get('scenario')
   const { user, session } = useAuth()
   const [scenarios, setScenarios] = useState<Scenario[]>([])
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>('')
@@ -40,9 +42,11 @@ export function Train() {
         setError(e.message)
         setScenarios([])
       } else {
-        setScenarios((data as Scenario[]) ?? [])
-        if ((data?.length ?? 0) > 0 && !selectedScenarioId) {
-          setSelectedScenarioId((data as Scenario[])[0].id)
+        const list = (data as Scenario[]) ?? []
+        setScenarios(list)
+        if (list.length > 0) {
+          const fromQuery = scenarioFromQuery && list.some((s) => s.id === scenarioFromQuery) ? scenarioFromQuery : null
+          setSelectedScenarioId((prev) => fromQuery ?? (prev || list[0].id))
         }
       }
       setLoading(false)
@@ -51,7 +55,7 @@ export function Train() {
     return () => {
       cancelled = true
     }
-  }, [selectedScenarioId])
+  }, [scenarioFromQuery])
 
   const onResult = useCallback(
     async (result: RecorderResult) => {
