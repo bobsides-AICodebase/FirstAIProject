@@ -11,3 +11,8 @@ if (!supabaseUrl || !supabaseKey) {
 
 // Placeholders so build succeeds without .env; auth will fail at runtime until vars are set (see .env.example)
 export const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Dev-only: expose for rep-audio RLS verification (see supabase/migrations/VERIFY_rep_audio.md)
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+  ;(window as unknown as { __supabase?: typeof supabase }).__supabase = supabase
+}
