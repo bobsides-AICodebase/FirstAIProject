@@ -1,4 +1,4 @@
-// Process rep audio: transcribe (Whisper) + evaluate (gpt-4o-mini) → rep_feedback.
+// Process rep audio: transcribe (gpt-4o-mini-transcribe) + evaluate (gpt-4o-mini) → rep_feedback.
 // Auth: JWT required; rep must belong to caller (reps.user_id === auth.uid()).
 // Idempotent: if rep already ready and feedback exists, return success.
 // Retry once on transient OpenAI failure.
@@ -27,7 +27,7 @@ type RepRow = {
 type FeedbackPayload = {
   bullets: string[]
   coaching: string
-  score?: number
+  score: number | null
 }
 
 function truncate(s: string, max: number): string {
@@ -37,14 +37,29 @@ function truncate(s: string, max: number): string {
 
 function isTransientOpenAIError(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err)
+  if (/429|quota|rate limit/i.test(msg)) return false
   if (/5\d\d|ECONNRESET|ETIMEDOUT|network|timeout/i.test(msg)) return true
   return false
+}
+
+function openAIErrorMessage(status: number, bodyText: string): string {
+  if (status === 429) {
+    return 'OpenAI quota exceeded. Check your plan and billing: https://platform.openai.com/account/billing'
+  }
+  try {
+    const j = JSON.parse(bodyText) as { error?: { message?: string } }
+    const msg = j?.error?.message
+    if (typeof msg === 'string' && msg.length > 0) return msg
+  } catch {
+    // ignore
+  }
+  return bodyText.length > 200 ? `${bodyText.slice(0, 200)}…` : bodyText
 }
 
 async function transcribe(apiKey: string, audioBlob: Blob, filename: string): Promise<string> {
   const form = new FormData()
   form.append('file', audioBlob, filename)
-  form.append('model', 'whisper-1')
+  form.append('model', 'gpt-4o-mini-transcribe')
   const res = await fetch(OPENAI_TRANSCRIPTIONS, {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}` },
@@ -52,7 +67,8 @@ async function transcribe(apiKey: string, audioBlob: Blob, filename: string): Pr
   })
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`Whisper ${res.status}: ${text}`)
+    const msg = openAIErrorMessage(res.status, text)
+    throw new Error(`Transcribe ${res.status}: ${msg}`)
   }
   const data = (await res.json()) as { text?: string }
   return typeof data.text === 'string' ? data.text : ''
@@ -60,10 +76,10 @@ async function transcribe(apiKey: string, audioBlob: Blob, filename: string): Pr
 
 async function evaluateTranscript(apiKey: string, transcript: string): Promise<FeedbackPayload> {
   const sys = `You evaluate short speech transcripts and return ONLY valid JSON (no markdown, no explanation).
-Output exactly: { "bullets": string[], "coaching": string, "score": number }
+Output exactly: { "bullets": string[], "coaching": string, "score": number | null }
 - bullets: 3–6 concise takeaways (strings).
 - coaching: one short paragraph of actionable coaching.
-- score: optional number 1–10.`
+- score: must be a number between 1 and 10 inclusive, or null. If omitted, use null.`
   const body = {
     model: 'gpt-4o-mini',
     response_format: { type: 'json_object' },
@@ -82,7 +98,8 @@ Output exactly: { "bullets": string[], "coaching": string, "score": number }
   })
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`Chat ${res.status}: ${text}`)
+    const msg = openAIErrorMessage(res.status, text)
+    throw new Error(`Chat ${res.status}: ${msg}`)
   }
   const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> }
   const rawContent = data.choices?.[0]?.message?.content
@@ -91,7 +108,17 @@ Output exactly: { "bullets": string[], "coaching": string, "score": number }
   if (!Array.isArray(parsed.bullets) || typeof parsed.coaching !== 'string') {
     throw new Error('Invalid feedback shape')
   }
-  return parsed
+  const score = parsed.score
+  if (score != null) {
+    if (typeof score !== 'number' || score < 1 || score > 10) {
+      throw new Error('Invalid score: must be number 1–10 or null')
+    }
+  }
+  return {
+    bullets: parsed.bullets,
+    coaching: parsed.coaching,
+    score: score ?? null,
+  }
 }
 
 Deno.serve(async (req) => {
@@ -132,7 +159,9 @@ Deno.serve(async (req) => {
     const repId = body.rep_id
     if (!repId || typeof repId !== 'string') return fail(400, 'rep_id required')
 
-    const admin = createClient(supabaseUrl, serviceKey)
+    const admin = createClient(supabaseUrl, serviceKey, {
+      global: { headers: { Authorization: `Bearer ${serviceKey}` } },
+    })
 
     const { data: rep, error: repErr } = await admin
       .from('reps')
@@ -166,7 +195,7 @@ Deno.serve(async (req) => {
     const filename = row.audio_path.split('/').pop() ?? 'audio.webm'
 
     let transcript = ''
-    let payload: FeedbackPayload = { bullets: [], coaching: '' }
+    let payload: FeedbackPayload = { bullets: [], coaching: '', score: null }
     const run = async () => {
       transcript = await transcribe(openaiKey, audioBlob, filename)
       payload = await evaluateTranscript(openaiKey, transcript)
@@ -196,7 +225,7 @@ Deno.serve(async (req) => {
         transcript,
         bullets: payload.bullets,
         coaching: payload.coaching ?? '',
-        score: payload.score ?? null,
+        score: payload.score,
         raw,
       },
       { onConflict: 'rep_id' }

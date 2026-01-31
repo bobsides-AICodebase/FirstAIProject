@@ -1,0 +1,9 @@
+# Edge Function config: process-rep-audio validates JWT and rep ownership inside the handler.
+# Disabling gateway JWT verification avoids 401 when the gateway rejects the token;
+# the function still returns 401 if the token is missing or invalid.
+[functions.process-rep-audio]
+verify_jwt = false
+
+# Cleanup runs with service role from cron; no user JWT.
+[functions.cleanup-rep-audio]
+verify_jwt = false

@@ -17,7 +17,7 @@ function extensionFromMime(mimeType: string): string {
 }
 
 export function Train() {
-  const { user } = useAuth()
+  const { user, session } = useAuth()
   const [scenarios, setScenarios] = useState<Scenario[]>([])
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>('')
   const [loading, setLoading] = useState(true)
@@ -115,12 +115,42 @@ export function Train() {
         setFeedback(null)
         setCurrentRepId(rep.id)
 
+        const accessToken = session?.access_token
+        if (!accessToken) {
+          setStatus('error')
+          setStatusMessage('Not signed in. Refresh the page and try again.')
+          setCurrentRepId(null)
+          return
+        }
         const { error: invokeErr } = await supabase.functions.invoke('process-rep-audio', {
           body: { rep_id: rep.id },
+          headers: { Authorization: `Bearer ${accessToken}` },
         })
         if (invokeErr) {
+          if (import.meta.env.DEV) console.error('Edge Function error:', invokeErr)
+          let message = invokeErr.message ?? 'Failed to start processing'
+          const ctx = invokeErr && typeof invokeErr === 'object' && 'context' in invokeErr ? (invokeErr as { context?: Response }).context : undefined
+          if (ctx && typeof ctx.text === 'function') {
+            try {
+              const text = await ctx.text()
+              if (text) {
+                try {
+                  const body = JSON.parse(text) as { error?: string }
+                  if (typeof body?.error === 'string') message = body.error
+                } catch {
+                  message = text.length > 200 ? `${text.slice(0, 200)}…` : text
+                }
+              }
+              const status = (ctx as Response).status
+              if (typeof status === 'number' && !message.includes(String(status))) {
+                message = `[${status}] ${message}`
+              }
+            } catch {
+              // keep default message
+            }
+          }
           setStatus('error')
-          setStatusMessage(invokeErr.message ?? 'Failed to start processing')
+          setStatusMessage(message)
           setCurrentRepId(null)
           return
         }
@@ -131,7 +161,7 @@ export function Train() {
         setCurrentRepId(null)
       }
     },
-    [user, selectedScenarioId]
+    [user, session, selectedScenarioId]
   )
 
   // Poll for rep status when processing (every 2s, max 60s)
