@@ -1,4 +1,4 @@
--- UP: require scenario_id, remove prompt_text, enforce duration cap
+-- scenario_id set not null; drop prompt_text; duration_secs <= 90
 
 alter table public.reps
   alter column scenario_id set not null;
