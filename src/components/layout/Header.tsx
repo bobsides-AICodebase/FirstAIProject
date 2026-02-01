@@ -73,6 +73,11 @@ export function Header() {
                 </Link>
               </li>
               <li>
+                <Link to="/request-access" className="text-gray-600 hover:text-gray-900">
+                  Request access
+                </Link>
+              </li>
+              <li>
                 <Link
                   to="/register"
                   className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"

@@ -146,7 +146,9 @@ export function Train() {
                 }
               }
               const status = (ctx as Response).status
-              if (typeof status === 'number' && !message.includes(String(status))) {
+              if (status === 403) {
+                message = 'Beta access required. This account is not whitelisted yet.'
+              } else if (typeof status === 'number' && !message.includes(String(status))) {
                 message = `[${status}] ${message}`
               }
             } catch {
@@ -317,20 +319,40 @@ export function Train() {
       {status !== 'idle' && status !== 'feedback' && (
         <div className="mt-6 rounded border border-gray-200 bg-gray-50 p-4">
           <p className="font-medium text-gray-900">
-            {status === 'error' ? 'Error' : status === 'processing' ? 'Processing' : 'Uploading'}
+            {status === 'error' && statusMessage.includes('Beta access required')
+              ? 'Beta access required'
+              : status === 'error'
+                ? 'Error'
+                : status === 'processing'
+                  ? 'Processing'
+                  : 'Uploading'}
           </p>
-          <p className={status === 'error' ? 'text-red-600' : 'text-gray-600'}>{statusMessage}</p>
-          {status === 'error' && (
-            <button
-              type="button"
-              onClick={() => {
-                setStatus('idle')
-                setStatusMessage('')
-              }}
-              className="mt-2 rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700"
-            >
-              Retry (record new rep)
-            </button>
+          {status === 'error' && statusMessage.includes('Beta access required') ? (
+            <>
+              <p className="text-gray-600">This account is not whitelisted yet.</p>
+              <Link
+                to="/request-access"
+                className="mt-2 inline-block rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700"
+              >
+                Request access
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className={status === 'error' ? 'text-red-600' : 'text-gray-600'}>{statusMessage}</p>
+              {status === 'error' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatus('idle')
+                    setStatusMessage('')
+                  }}
+                  className="mt-2 rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700"
+                >
+                  Retry (record new rep)
+                </button>
+              )}
+            </>
           )}
           {(status === 'processing' || status === 'uploading') && (
             <Link

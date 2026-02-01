@@ -172,6 +172,18 @@ Deno.serve(async (req) => {
     const row = rep as RepRow
     if (row.user_id !== user.id) return fail(403, 'Rep does not belong to caller')
 
+    const betaMsg = 'Beta access required. This account is not whitelisted yet.'
+    const userEmailLower = (user.email ?? '').toLowerCase()
+    const { data: whitelistRow } = await admin
+      .from('beta_whitelist')
+      .select('email')
+      .ilike('email', userEmailLower)
+      .maybeSingle()
+    if (!whitelistRow) {
+      await admin.from('reps').update({ status: 'failed', error_message: betaMsg }).eq('id', repId)
+      return fail(403, betaMsg)
+    }
+
     if (row.status === 'ready') {
       const { data: fb } = await admin.from('rep_feedback').select('rep_id').eq('rep_id', repId).single()
       if (fb) return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders, status: 200 })

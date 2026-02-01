@@ -6,8 +6,11 @@ create table if not exists public.beta_whitelist (
 
 alter table public.beta_whitelist enable row level security;
 
--- only service role should manage; authenticated users can't read
+-- prevent reads by normal clients
 create policy "beta_whitelist_no_select"
 on public.beta_whitelist for select
 to authenticated
 using (false);
+
+-- DOWN (manual)
+-- drop table if exists public.beta_whitelist;

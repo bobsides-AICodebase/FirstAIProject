@@ -13,6 +13,7 @@ import { WhoItsFor } from './pages/marketing/WhoItsFor'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
 import { ResetPassword } from './pages/ResetPassword'
+import { RequestAccess } from './pages/RequestAccess'
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
       { path: 'register', element: <Register /> },
       { path: 'forgot-password', element: <ForgotPassword /> },
       { path: 'reset-password', element: <ResetPassword /> },
+      { path: 'request-access', element: <RequestAccess /> },
       {
         path: 'app',
         element: <ProtectedRoute />,
