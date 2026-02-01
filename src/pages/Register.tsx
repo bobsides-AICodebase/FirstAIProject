@@ -35,6 +35,9 @@ export function Register() {
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
       })
       if (signUpError) {
         setError(signUpError.message)
