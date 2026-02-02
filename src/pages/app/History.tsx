@@ -13,6 +13,20 @@ export function History() {
   const [feedbackByRepId, setFeedbackByRepId] = useState<Map<string, RepFeedback>>(new Map())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deletingRepId, setDeletingRepId] = useState<string | null>(null)
+
+  const handleDeleteRep = async (rep: Rep) => {
+    if (!window.confirm('Delete this rep? This cannot be undone.')) return
+    setDeletingRepId(rep.id)
+    const { error: rpcError } = await supabase.rpc('soft_delete_rep', { rep_id: rep.id })
+    if (rpcError) {
+      setDeletingRepId(null)
+      window.alert(rpcError.message)
+      return
+    }
+    setReps((prev) => prev.filter((r) => r.id !== rep.id))
+    setDeletingRepId(null)
+  }
 
   useEffect(() => {
     if (!user) {
@@ -177,6 +191,14 @@ export function History() {
                   >
                     Retry
                   </Link>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteRep(rep)}
+                    disabled={deletingRepId === rep.id}
+                    className="rounded border border-red-300 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {deletingRepId === rep.id ? 'Deleting…' : 'Delete'}
+                  </button>
                 </div>
               </li>
             )
