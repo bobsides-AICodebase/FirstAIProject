@@ -145,6 +145,45 @@ export function RepDetail() {
         </div>
       )}
 
+      {rep.status === 'ready' && feedback && (
+        <div className="mt-4 rounded border border-gray-200 bg-gray-50 p-4">
+          <p className="font-medium text-gray-900">Delivery</p>
+          {(() => {
+            const raw = feedback.raw as { audio_delivery?: { overall_score: number; dimensions?: Record<string, string>; summary?: string; coaching?: string[] }; audio_delivery_error?: string } | null | undefined
+            const delivery = raw?.audio_delivery
+            const deliveryError = raw?.audio_delivery_error
+            if (delivery) {
+              const dims = delivery.dimensions ?? {}
+              const dimOrder = ['pace', 'clarity', 'fillers', 'confidence', 'pauses', 'tone'] as const
+              return (
+                <>
+                  <p className="mt-2 font-medium text-gray-900">
+                    Overall delivery score: {delivery.overall_score} / 10
+                  </p>
+                  {dimOrder.some((k) => dims[k]) && (
+                    <ul className="mt-2 list-inside list-disc text-gray-700">
+                      {dimOrder.map((k) => (dims[k] ? <li key={k}><span className="capitalize">{k}</span>: {dims[k]}</li> : null))}
+                    </ul>
+                  )}
+                  {delivery.summary && <p className="mt-2 text-gray-700">{delivery.summary}</p>}
+                  {Array.isArray(delivery.coaching) && delivery.coaching.length > 0 && (
+                    <ul className="mt-2 list-inside list-disc text-gray-700">
+                      {delivery.coaching.map((c, i) => (
+                        <li key={i}>{typeof c === 'string' ? c : String(c)}</li>
+                      ))}
+                    </ul>
+                  )}
+                </>
+              )
+            }
+            if (deliveryError) {
+              return <p className="mt-2 text-gray-500">Delivery analysis unavailable.</p>
+            }
+            return <p className="mt-2 text-gray-500">Analyzing delivery…</p>
+          })()}
+        </div>
+      )}
+
       {audioUrl && !rep.audio_deleted_at && (
         <div className="mt-4">
           <p className="text-sm font-medium text-gray-700">Audio</p>

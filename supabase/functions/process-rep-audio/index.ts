@@ -7,6 +7,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const BUCKET = 'rep-audio'
 const MAX_ERROR_LEN = 200
+const DELIVERY_EVAL_TIMEOUT_MS = 60_000
 const OPENAI_TRANSCRIPTIONS = 'https://api.openai.com/v1/audio/transcriptions'
 const OPENAI_CHAT = 'https://api.openai.com/v1/chat/completions'
 
@@ -22,12 +23,29 @@ type RepRow = {
   audio_path: string | null
   status: string
   error_message: string | null
+  duration_secs?: number | null
 }
 
 type FeedbackPayload = {
   bullets: string[]
   coaching: string
   score: number | null
+}
+
+type DeliveryDimensions = {
+  pace?: string
+  clarity?: string
+  fillers?: string
+  confidence?: string
+  pauses?: string
+  tone?: string
+}
+
+type DeliveryEvaluationResult = {
+  overall_score: number
+  dimensions: DeliveryDimensions
+  summary: string
+  coaching: string[]
 }
 
 function truncate(s: string, max: number): string {
@@ -121,6 +139,131 @@ Output exactly: { "bullets": string[], "coaching": string, "score": number | nul
   }
 }
 
+/** Delivery signals inferred from transcript (and optional duration). No audio. */
+function computeDeliverySignals(transcript: string, durationSecs: number | null | undefined): {
+  word_count: number
+  words_per_minute: number | null
+  filler_word_count: number
+  sentence_length_variance: number
+} {
+  const trimmed = transcript.trim()
+  const words = trimmed ? trimmed.split(/\s+/).filter(Boolean) : []
+  const wordCount = words.length
+
+  const fillerRegex = /\b(um|uh|like|you\s+know)\b/gi
+  const fillerWordCount = (trimmed.match(fillerRegex) ?? []).length
+
+  const sentences = trimmed
+    ? trimmed.split(/[.!?]+/).map((s) => s.trim()).filter(Boolean)
+    : []
+  const sentenceLengths = sentences.map((s) => s.split(/\s+/).filter(Boolean).length)
+  let sentenceLengthVariance = 0
+  if (sentenceLengths.length > 1) {
+    const mean = sentenceLengths.reduce((a, b) => a + b, 0) / sentenceLengths.length
+    const sqDiffs = sentenceLengths.map((n) => (n - mean) ** 2)
+    sentenceLengthVariance = sqDiffs.reduce((a, b) => a + b, 0) / sentenceLengths.length
+  }
+
+  let wordsPerMinute: number | null = null
+  if (durationSecs != null && durationSecs > 0 && wordCount > 0) {
+    wordsPerMinute = Math.round((wordCount / durationSecs) * 60)
+  }
+
+  return {
+    word_count: wordCount,
+    words_per_minute: wordsPerMinute,
+    filler_word_count: fillerWordCount,
+    sentence_length_variance: Math.round(sentenceLengthVariance * 100) / 100,
+  }
+}
+
+/**
+ * Best-effort delivery evaluation inferred from transcript and timing heuristics only.
+ * No audio is sent. One text-only OpenAI call produces the same output shape for raw.audio_delivery.
+ */
+async function evaluateDelivery(
+  apiKey: string,
+  transcript: string,
+  durationSecs: number | null | undefined
+): Promise<DeliveryEvaluationResult> {
+  const signals = computeDeliverySignals(transcript, durationSecs)
+
+  const systemPrompt = `You infer DELIVERY quality from speech patterns in a transcript and from the provided numeric signals. This is NOT acoustic analysis—no audio was used. Base your assessment only on:
+- Transcript wording and structure
+- words_per_minute (if present): speaking rate
+- filler_word_count: count of um, uh, like, you know
+- sentence_length_variance: variation in sentence length (higher can suggest run-ons or choppiness)
+
+Return ONLY valid JSON (no markdown, no explanation). Output exactly:
+{
+  "overall_score": number,
+  "dimensions": { "pace": string, "clarity": string, "fillers": string, "confidence": string, "pauses": string, "tone": string },
+  "summary": string,
+  "coaching": string[]
+}
+- overall_score: 1–10 (inferred delivery only).
+- dimensions: short assessment per dimension (pace, clarity, fillers, confidence, pauses, tone) based on transcript and signals.
+- summary: one short paragraph on inferred delivery.
+- coaching: 0–4 actionable delivery tips (strings).`
+
+  const userContent = `Signals (inferred from transcript${signals.words_per_minute != null ? ' and duration' : ''}):
+- word_count: ${signals.word_count}
+- words_per_minute: ${signals.words_per_minute ?? 'not available (no duration)'}
+- filler_word_count: ${signals.filler_word_count}
+- sentence_length_variance: ${signals.sentence_length_variance}
+
+Transcript:
+${transcript}`
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), DELIVERY_EVAL_TIMEOUT_MS)
+
+  try {
+    const body = {
+      model: 'gpt-4o-mini',
+      response_format: { type: 'json_object' as const },
+      messages: [
+        { role: 'system' as const, content: systemPrompt },
+        { role: 'user' as const, content: userContent },
+      ],
+    }
+    const res = await fetch(OPENAI_CHAT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    })
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(openAIErrorMessage(res.status, text))
+    }
+    const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> }
+    const rawContent = data.choices?.[0]?.message?.content
+    if (!rawContent) throw new Error('Empty delivery response')
+    const parsed = JSON.parse(rawContent) as DeliveryEvaluationResult
+    if (typeof parsed.overall_score !== 'number' || parsed.overall_score < 1 || parsed.overall_score > 10) {
+      throw new Error('Invalid delivery overall_score')
+    }
+    if (typeof parsed.summary !== 'string' || !Array.isArray(parsed.coaching)) {
+      throw new Error('Invalid delivery shape: summary and coaching required')
+    }
+    if (!parsed.dimensions || typeof parsed.dimensions !== 'object') {
+      throw new Error('Invalid delivery dimensions')
+    }
+    return {
+      overall_score: parsed.overall_score,
+      dimensions: parsed.dimensions as DeliveryDimensions,
+      summary: parsed.summary,
+      coaching: parsed.coaching,
+    }
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -165,7 +308,7 @@ Deno.serve(async (req) => {
 
     const { data: rep, error: repErr } = await admin
       .from('reps')
-      .select('id, user_id, scenario_id, audio_path, status, error_message')
+      .select('id, user_id, scenario_id, audio_path, status, error_message, duration_secs')
       .eq('id', repId)
       .single()
     if (repErr || !rep) return fail(404, 'Rep not found')
@@ -243,6 +386,27 @@ Deno.serve(async (req) => {
       { onConflict: 'rep_id' }
     )
     await admin.from('reps').update({ status: 'ready', error_message: null }).eq('id', repId)
+
+    // Best-effort delivery evaluation (inferred from transcript + heuristics); persist to rep_feedback.raw
+    const { data: fbRow } = await admin
+      .from('rep_feedback')
+      .select('raw')
+      .eq('rep_id', repId)
+      .single()
+    const existingRaw = (fbRow?.raw as Record<string, unknown>) ?? {}
+    try {
+      const deliveryResult = await evaluateDelivery(openaiKey, transcript, row.duration_secs)
+      await admin
+        .from('rep_feedback')
+        .update({ raw: { ...existingRaw, audio_delivery: deliveryResult } })
+        .eq('rep_id', repId)
+    } catch (deliveryErr) {
+      const errMsg = truncate(deliveryErr instanceof Error ? deliveryErr.message : String(deliveryErr), MAX_ERROR_LEN)
+      await admin
+        .from('rep_feedback')
+        .update({ raw: { ...existingRaw, audio_delivery_error: errMsg } })
+        .eq('rep_id', repId)
+    }
 
     return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders, status: 200 })
   } catch (err) {
