@@ -17,15 +17,17 @@ function isMediaRecorderSupported(): boolean {
   return typeof window !== 'undefined' && typeof MediaRecorder !== 'undefined'
 }
 
+type RecordingState = 'idle' | 'recording' | 'paused'
+
 export function Recorder({ onResult, disabled }: RecorderProps) {
   const [supported, setSupported] = useState<boolean | null>(null)
-  const [recording, setRecording] = useState(false)
+  const [recordingState, setRecordingState] = useState<RecordingState>('idle')
   const [elapsedSecs, setElapsedSecs] = useState(0)
   const streamRef = useRef<MediaStream | null>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const startTimeRef = useRef<number>(0)
+  const activeSecsRef = useRef(0)
   const stopRecordingRef = useRef<() => void>(() => {})
 
   useEffect(() => {
@@ -39,8 +41,23 @@ export function Recorder({ onResult, disabled }: RecorderProps) {
     }
   }, [])
 
+  const startTimer = useCallback(() => {
+    stopTimer()
+    timerRef.current = setInterval(() => {
+      setElapsedSecs((s) => {
+        const next = s + 1
+        activeSecsRef.current = next
+        if (next >= MAX_DURATION_SECS) {
+          stopRecordingRef.current()
+          return MAX_DURATION_SECS
+        }
+        return next
+      })
+    }, 1000)
+  }, [stopTimer])
+
   const startRecording = useCallback(async () => {
-    if (!supported || recording || disabled) return
+    if (!supported || recordingState !== 'idle' || disabled) return
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
@@ -52,35 +69,41 @@ export function Recorder({ onResult, disabled }: RecorderProps) {
       const recorder = new MediaRecorder(stream)
       recorderRef.current = recorder
       chunksRef.current = []
+      activeSecsRef.current = 0
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data)
       }
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: mimeType })
-        const durationSecs = Math.min(
-          Math.round((Date.now() - startTimeRef.current) / 1000),
-          MAX_DURATION_SECS
-        )
+        const durationSecs = Math.min(activeSecsRef.current, MAX_DURATION_SECS)
         onResult({ blob, durationSecs, mimeType })
       }
       recorder.start()
-      setRecording(true)
+      setRecordingState('recording')
       setElapsedSecs(0)
-      startTimeRef.current = Date.now()
-      timerRef.current = setInterval(() => {
-        setElapsedSecs((s) => {
-          const next = s + 1
-          if (next >= MAX_DURATION_SECS) {
-            stopRecordingRef.current()
-            return MAX_DURATION_SECS
-          }
-          return next
-        })
-      }, 1000)
+      startTimer()
     } catch (err) {
       console.error('Recorder start failed:', err)
     }
-  }, [supported, recording, disabled, onResult])
+  }, [supported, recordingState, disabled, onResult, startTimer])
+
+  const pauseRecording = useCallback(() => {
+    const rec = recorderRef.current
+    if (rec?.state === 'recording') {
+      rec.pause()
+      stopTimer()
+      setRecordingState('paused')
+    }
+  }, [stopTimer])
+
+  const resumeRecording = useCallback(() => {
+    const rec = recorderRef.current
+    if (rec?.state === 'paused') {
+      rec.resume()
+      setRecordingState('recording')
+      startTimer()
+    }
+  }, [startTimer])
 
   const stopRecording = useCallback(() => {
     stopTimer()
@@ -90,7 +113,7 @@ export function Recorder({ onResult, disabled }: RecorderProps) {
     str?.getTracks().forEach((t) => t.stop())
     streamRef.current = null
     recorderRef.current = null
-    setRecording(false)
+    setRecordingState('idle')
   }, [stopTimer])
 
   stopRecordingRef.current = stopRecording
@@ -114,24 +137,44 @@ export function Recorder({ onResult, disabled }: RecorderProps) {
     )
   }
 
+  const isActive = recordingState === 'recording' || recordingState === 'paused'
+
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="text-lg font-medium tabular-nums">
-        {recording ? `${elapsedSecs}s / ${MAX_DURATION_SECS}s` : '0s'}
+        {isActive ? `${elapsedSecs}s / ${MAX_DURATION_SECS}s` : '0s'}
+        {recordingState === 'paused' && ' (paused)'}
       </div>
       <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={recording ? stopRecording : startRecording}
-          disabled={disabled}
-          className={
-            recording
-              ? 'rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:opacity-50'
-              : 'rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50'
-          }
-        >
-          {recording ? 'Stop' : 'Record'}
-        </button>
+        {recordingState === 'idle' ? (
+          <button
+            type="button"
+            onClick={startRecording}
+            disabled={disabled}
+            className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            Record
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={recordingState === 'recording' ? pauseRecording : resumeRecording}
+              disabled={disabled}
+              className="rounded border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              {recordingState === 'recording' ? 'Pause' : 'Resume'}
+            </button>
+            <button
+              type="button"
+              onClick={stopRecording}
+              disabled={disabled}
+              className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              Stop
+            </button>
+          </>
+        )}
       </div>
     </div>
   )
