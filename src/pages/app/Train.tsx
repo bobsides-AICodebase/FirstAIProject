@@ -28,7 +28,71 @@ export function Train() {
   const [statusMessage, setStatusMessage] = useState<string>('')
   const [currentRepId, setCurrentRepId] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<RepFeedback | null>(null)
+  const [previousFocus, setPreviousFocus] = useState<string | null>(null)
+  const [reminderLoading, setReminderLoading] = useState(false)
   const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Pre-recording reminder: latest delivery coaching focus for this scenario (read-only, non-blocking)
+  useEffect(() => {
+    if (!selectedScenarioId || !user) {
+      setPreviousFocus(null)
+      setReminderLoading(false)
+      return
+    }
+    let cancelled = false
+    setReminderLoading(true)
+    async function loadReminder() {
+      try {
+        const { data: reps } = await supabase
+          .from('reps')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('scenario_id', selectedScenarioId)
+          .eq('status', 'ready')
+          .order('created_at', { ascending: false })
+          .limit(5)
+        if (cancelled) return
+        if (!reps?.length) {
+          if (!cancelled) {
+            setPreviousFocus(null)
+            setReminderLoading(false)
+          }
+          return
+        }
+        for (const rep of reps) {
+          const { data: fb } = await supabase
+            .from('rep_feedback')
+            .select('raw')
+            .eq('rep_id', rep.id)
+            .single()
+          if (cancelled) return
+          const raw = fb?.raw as { audio_delivery?: { coaching?: string[] } } | null | undefined
+          const delivery = raw?.audio_delivery
+          const firstCoaching = Array.isArray(delivery?.coaching) && delivery.coaching.length > 0 ? delivery.coaching[0] : null
+          if (firstCoaching && typeof firstCoaching === 'string') {
+            if (!cancelled) {
+              setPreviousFocus(firstCoaching)
+              setReminderLoading(false)
+            }
+            return
+          }
+        }
+        if (!cancelled) {
+          setPreviousFocus(null)
+          setReminderLoading(false)
+        }
+      } catch {
+        if (!cancelled) {
+          setPreviousFocus(null)
+          setReminderLoading(false)
+        }
+      }
+    }
+    loadReminder()
+    return () => {
+      cancelled = true
+    }
+  }, [selectedScenarioId, user])
 
   useEffect(() => {
     let cancelled = false
@@ -270,6 +334,21 @@ export function Train() {
           ))}
         </select>
       </div>
+
+      {status === 'idle' && (
+        <div className="mt-6 rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+          {reminderLoading ? (
+            <span>Loading focus…</span>
+          ) : previousFocus ? (
+            <>
+              <p className="font-medium text-gray-700">Focus for this rep</p>
+              <p className="mt-1 text-gray-600">{previousFocus}</p>
+            </>
+          ) : (
+            <p>After each rep, we’ll highlight one thing to focus on next time.</p>
+          )}
+        </div>
+      )}
 
       <div className="mt-6">
         <Recorder
