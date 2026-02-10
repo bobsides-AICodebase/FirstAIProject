@@ -13,6 +13,7 @@ export function RepDetail() {
   const [rep, setRep] = useState<Rep | null>(null)
   const [scenario, setScenario] = useState<Scenario | null>(null)
   const [feedback, setFeedback] = useState<RepFeedback | null>(null)
+  const [moreTipsOpen, setMoreTipsOpen] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -131,14 +132,50 @@ export function RepDetail() {
       {rep.status === 'ready' && feedback && (
         <div className="mt-4 rounded border border-gray-200 bg-gray-50 p-4">
           <p className="font-medium text-gray-900">Feedback</p>
-          {feedback.bullets.length > 0 && (
-            <ul className="mt-2 list-inside list-disc text-gray-700">
-              {feedback.bullets.map((b, i) => (
-                <li key={i}>{typeof b === 'string' ? b : String(b)}</li>
-              ))}
-            </ul>
-          )}
-          {feedback.coaching && <p className="mt-2 text-gray-700">{feedback.coaching}</p>}
+          {(() => {
+            const raw = feedback.raw as { transcript_focus?: { primary_focus?: string; secondary_tips?: string[] } } | null | undefined
+            const tf = raw?.transcript_focus
+            const primaryFocus = tf?.primary_focus?.trim()
+            const secondaryTips = Array.isArray(tf?.secondary_tips) ? tf.secondary_tips.filter((t): t is string => typeof t === 'string') : []
+            if (primaryFocus) {
+              return (
+                <>
+                  <p className="mt-2 text-sm font-medium text-gray-700">Primary improvement focus</p>
+                  <p className="mt-1 text-gray-900">{primaryFocus}</p>
+                  {secondaryTips.length > 0 && (
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        onClick={() => setMoreTipsOpen((o) => !o)}
+                        className="text-sm text-gray-600 hover:text-gray-800 underline"
+                      >
+                        {moreTipsOpen ? 'Less' : 'More tips'}
+                      </button>
+                      {moreTipsOpen && (
+                        <ul className="mt-1 list-inside list-disc text-sm text-gray-600">
+                          {secondaryTips.map((t, i) => (
+                            <li key={i}>{t}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                </>
+              )
+            }
+            return (
+              <>
+                {feedback.bullets.length > 0 && (
+                  <ul className="mt-2 list-inside list-disc text-gray-700">
+                    {feedback.bullets.map((b, i) => (
+                      <li key={i}>{typeof b === 'string' ? b : String(b)}</li>
+                    ))}
+                  </ul>
+                )}
+                {feedback.coaching && <p className="mt-2 text-gray-700">{feedback.coaching}</p>}
+              </>
+            )
+          })()}
           {feedback.score != null && (
             <p className="mt-2 font-medium text-gray-900">Score: {feedback.score}/10</p>
           )}

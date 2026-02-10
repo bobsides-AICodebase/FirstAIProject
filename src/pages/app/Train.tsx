@@ -28,11 +28,12 @@ export function Train() {
   const [statusMessage, setStatusMessage] = useState<string>('')
   const [currentRepId, setCurrentRepId] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<RepFeedback | null>(null)
+  const [moreTipsOpen, setMoreTipsOpen] = useState(false)
   const [previousFocus, setPreviousFocus] = useState<string | null>(null)
   const [reminderLoading, setReminderLoading] = useState(false)
   const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Pre-recording reminder: latest delivery coaching focus for this scenario (read-only, non-blocking)
+  // Pre-recording reminder: primary improvement focus from latest rep with transcript_focus (read-only, non-blocking)
   useEffect(() => {
     if (!selectedScenarioId || !user) {
       setPreviousFocus(null)
@@ -66,12 +67,11 @@ export function Train() {
             .eq('rep_id', rep.id)
             .single()
           if (cancelled) return
-          const raw = fb?.raw as { audio_delivery?: { coaching?: string[] } } | null | undefined
-          const delivery = raw?.audio_delivery
-          const firstCoaching = Array.isArray(delivery?.coaching) && delivery.coaching.length > 0 ? delivery.coaching[0] : null
-          if (firstCoaching && typeof firstCoaching === 'string') {
+          const raw = fb?.raw as { transcript_focus?: { primary_focus?: string } } | null | undefined
+          const primaryFocus = raw?.transcript_focus?.primary_focus?.trim()
+          if (primaryFocus) {
             if (!cancelled) {
-              setPreviousFocus(firstCoaching)
+              setPreviousFocus(primaryFocus)
               setReminderLoading(false)
             }
             return
@@ -341,7 +341,7 @@ export function Train() {
             <span>Loading focus…</span>
           ) : previousFocus ? (
             <>
-              <p className="font-medium text-gray-700">Focus for this rep</p>
+              <p className="font-medium text-gray-700">Primary improvement focus</p>
               <p className="mt-1 text-gray-600">{previousFocus}</p>
             </>
           ) : (
@@ -360,16 +360,52 @@ export function Train() {
       {status === 'feedback' && feedback && (
         <div className="mt-6 rounded border border-green-200 bg-green-50 p-4">
           <p className="font-medium text-gray-900">Feedback</p>
-          {feedback.bullets.length > 0 && (
-            <ul className="mt-2 list-inside list-disc text-gray-700">
-              {feedback.bullets.map((b, i) => (
-                <li key={i}>{typeof b === 'string' ? b : String(b)}</li>
-              ))}
-            </ul>
-          )}
-          {feedback.coaching && (
-            <p className="mt-2 text-gray-700">{feedback.coaching}</p>
-          )}
+          {(() => {
+            const raw = feedback.raw as { transcript_focus?: { primary_focus?: string; secondary_tips?: string[] } } | null | undefined
+            const tf = raw?.transcript_focus
+            const primaryFocus = tf?.primary_focus?.trim()
+            const secondaryTips = Array.isArray(tf?.secondary_tips) ? tf.secondary_tips.filter((t): t is string => typeof t === 'string') : []
+            if (primaryFocus) {
+              return (
+                <>
+                  <p className="mt-2 text-sm font-medium text-gray-700">Primary improvement focus</p>
+                  <p className="mt-1 text-gray-900">{primaryFocus}</p>
+                  {secondaryTips.length > 0 && (
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        onClick={() => setMoreTipsOpen((o) => !o)}
+                        className="text-sm text-gray-600 hover:text-gray-800 underline"
+                      >
+                        {moreTipsOpen ? 'Less' : 'More tips'}
+                      </button>
+                      {moreTipsOpen && (
+                        <ul className="mt-1 list-inside list-disc text-sm text-gray-600">
+                          {secondaryTips.map((t, i) => (
+                            <li key={i}>{t}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                </>
+              )
+            }
+            return (
+              <>
+                {feedback.bullets.length > 0 && (
+                  <ul className="mt-2 list-inside list-disc text-gray-700">
+                    {feedback.bullets.map((b, i) => (
+                      <li key={i}>{typeof b === 'string' ? b : String(b)}</li>
+                    ))}
+                  </ul>
+                )}
+                {feedback.coaching && (
+                  <p className="mt-2 text-gray-700">{feedback.coaching}</p>
+                )}
+              </>
+            )
+          })()}
           {feedback.score != null && (
             <p className="mt-2 font-medium text-gray-900">Score: {feedback.score}/10</p>
           )}
@@ -380,6 +416,7 @@ export function Train() {
                 setStatus('idle')
                 setFeedback(null)
                 setStatusMessage('')
+                setMoreTipsOpen(false)
               }}
               className="rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700"
             >

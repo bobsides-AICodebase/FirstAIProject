@@ -26,10 +26,16 @@ type RepRow = {
   duration_secs?: number | null
 }
 
+type TranscriptFocus = {
+  primary_focus: string
+  secondary_tips: string[]
+}
+
 type FeedbackPayload = {
   bullets: string[]
   coaching: string
   score: number | null
+  transcript_focus?: TranscriptFocus
 }
 
 type DeliveryDimensions = {
@@ -94,10 +100,16 @@ async function transcribe(apiKey: string, audioBlob: Blob, filename: string): Pr
 
 async function evaluateTranscript(apiKey: string, transcript: string): Promise<FeedbackPayload> {
   const sys = `You evaluate short speech transcripts and return ONLY valid JSON (no markdown, no explanation).
-Output exactly: { "bullets": string[], "coaching": string, "score": number | null }
-- bullets: 3–6 concise takeaways (strings).
-- coaching: one short paragraph of actionable coaching.
-- score: must be a number between 1 and 10 inclusive, or null. If omitted, use null.`
+
+CRITICAL: All feedback must be purely constructive and improvement-focused. Frame everything as what to DO or CHANGE in the next rep. Do not summarize the transcript. Do not restate what the speaker said. Do not describe current performance. Do not evaluate content correctness. Do not praise without giving a concrete improvement action.
+
+Output exactly: { "bullets": string[], "coaching": string, "score": number | null, "primary_focus": string, "secondary_tips": string[] }
+
+- bullets: 3–6 concise improvement-oriented takeaways. Each must be an actionable tip or change for the next rep. Avoid "You did X" or "You talked about Y". Use "Next time, …" or "Try …" or "Add …" style.
+- coaching: one short paragraph of actionable coaching for the next rep only. No summaries. No restating what was said.
+- score: must be a number between 1 and 10 inclusive, or null. If omitted, use null.
+- primary_focus: exactly ONE sentence—a specific, actionable instruction phrased as something to DO or CHANGE next time. Example: "Add one concrete example in the middle of your next rep." NOT "Your examples were clear." Optimize for actionability.
+- secondary_tips: 0–3 optional shorter tips. Each must be constructive and actionable. Do NOT repeat the primary_focus. Do NOT restate what happened. Do NOT use vague advice (e.g. avoid "be clearer", "sound more confident" without a concrete action).`
   const body = {
     model: 'gpt-4o-mini',
     response_format: { type: 'json_object' },
@@ -122,7 +134,7 @@ Output exactly: { "bullets": string[], "coaching": string, "score": number | nul
   const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> }
   const rawContent = data.choices?.[0]?.message?.content
   if (!rawContent) throw new Error('Empty chat response')
-  const parsed = JSON.parse(rawContent) as FeedbackPayload
+  const parsed = JSON.parse(rawContent) as Record<string, unknown>
   if (!Array.isArray(parsed.bullets) || typeof parsed.coaching !== 'string') {
     throw new Error('Invalid feedback shape')
   }
@@ -132,10 +144,22 @@ Output exactly: { "bullets": string[], "coaching": string, "score": number | nul
       throw new Error('Invalid score: must be number 1–10 or null')
     }
   }
+  let transcript_focus: TranscriptFocus | undefined
+  try {
+    const pf = parsed.primary_focus
+    const st = parsed.secondary_tips
+    if (typeof pf === 'string' && pf.trim().length > 0 && Array.isArray(st)) {
+      const tips = st.filter((t): t is string => typeof t === 'string').slice(0, 3)
+      transcript_focus = { primary_focus: pf.trim(), secondary_tips: tips }
+    }
+  } catch {
+    // omit transcript_focus on parse/validation failure
+  }
   return {
-    bullets: parsed.bullets,
-    coaching: parsed.coaching,
-    score: score ?? null,
+    bullets: parsed.bullets as string[],
+    coaching: parsed.coaching as string,
+    score: score != null ? (score as number) : null,
+    ...(transcript_focus && { transcript_focus }),
   }
 }
 
@@ -373,7 +397,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    const raw = { bullets: payload.bullets, coaching: payload.coaching, score: payload.score }
+    const raw: Record<string, unknown> = {
+      bullets: payload.bullets,
+      coaching: payload.coaching,
+      score: payload.score,
+    }
+    if (payload.transcript_focus) {
+      raw.transcript_focus = payload.transcript_focus
+    }
     await admin.from('rep_feedback').upsert(
       {
         rep_id: repId,

@@ -113,7 +113,12 @@ export function History() {
     }
   }
 
-  const firstBulletSummary = (fb: RepFeedback): string => {
+  const feedbackSummary = (fb: RepFeedback): string => {
+    const raw = fb.raw as { transcript_focus?: { primary_focus?: string } } | null | undefined
+    const primary = raw?.transcript_focus?.primary_focus?.trim()
+    if (primary) {
+      return primary.length > SUMMARY_MAX_CHARS ? `${primary.slice(0, SUMMARY_MAX_CHARS)}…` : primary
+    }
     if (!Array.isArray(fb.bullets) || fb.bullets.length === 0) return ''
     const first = fb.bullets[0]
     const s = typeof first === 'string' ? first : String(first)
@@ -139,7 +144,7 @@ export function History() {
         <ul className="mt-6 list-none space-y-3 p-0">
           {reps.map((rep) => {
             const fb = feedbackByRepId.get(rep.id)
-            const summary = rep.status === 'ready' && fb ? firstBulletSummary(fb) : ''
+            const summary = rep.status === 'ready' && fb ? feedbackSummary(fb) : ''
             const score = rep.status === 'ready' && fb && fb.score != null ? fb.score : null
             return (
               <li
