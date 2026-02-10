@@ -151,7 +151,7 @@ export function Recorder({ onResult, disabled }: RecorderProps) {
             type="button"
             onClick={startRecording}
             disabled={disabled}
-            className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded bg-brand-gradient px-4 py-2 text-brand-ivory hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             Record
           </button>

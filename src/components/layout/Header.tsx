@@ -81,7 +81,7 @@ export function Header() {
               <li>
                 <Link
                   to="/register"
-                  className="rounded-lg bg-brand-gradient px-4 py-2 text-sm font-semibold text-brand-ivory hover:opacity-90 transition-opacity"
+                  className="rounded-lg border border-white/40 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-white/90"
                 >
                   Try it out
                 </Link>

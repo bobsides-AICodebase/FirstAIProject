@@ -14,15 +14,10 @@ export default {
           pink: '#F472B6',
         },
       },
+      backgroundImage: {
+        'brand-gradient': 'linear-gradient(to right, #60A5FA, #A78BFA, #F472B6)',
+      },
     },
   },
-  plugins: [
-    function ({ addUtilities }) {
-      addUtilities({
-        '.bg-brand-gradient': {
-          'background-image': 'linear-gradient(to right, #60A5FA, #A78BFA, #F472B6)',
-        },
-      })
-    },
-  ],
+  plugins: [],
 }

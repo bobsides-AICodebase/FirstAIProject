@@ -439,7 +439,7 @@ export function Train() {
                 setStatusMessage('')
                 setMoreTipsOpen(false)
               }}
-              className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 shadow-sm"
+              className="rounded-lg bg-brand-gradient px-4 py-2.5 text-sm font-semibold text-brand-ivory hover:opacity-90 transition-opacity shadow-sm"
             >
               Record another
             </button>
@@ -469,7 +469,7 @@ export function Train() {
               <p className="text-gray-600">This account is not whitelisted yet.</p>
               <Link
                 to="/request-access"
-                className="mt-3 inline-block rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 shadow-sm"
+                className="mt-3 inline-block rounded-lg bg-brand-gradient px-4 py-2.5 text-sm font-semibold text-brand-ivory hover:opacity-90 transition-opacity shadow-sm"
               >
                 Request access
               </Link>
@@ -484,7 +484,7 @@ export function Train() {
                     setStatus('idle')
                     setStatusMessage('')
                   }}
-                  className="mt-3 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 shadow-sm"
+                  className="mt-3 rounded-lg bg-brand-gradient px-4 py-2.5 text-sm font-semibold text-brand-ivory hover:opacity-90 transition-opacity shadow-sm"
                 >
                   Retry (record new rep)
                 </button>

@@ -231,7 +231,7 @@ export function RepDetail() {
       <div className="mt-6 flex gap-2">
         <Link
           to={`/app/train?scenario=${rep.scenario_id}`}
-          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          className="rounded bg-brand-gradient px-4 py-2 text-brand-ivory hover:opacity-90 transition-opacity"
         >
           Retry this scenario
         </Link>
