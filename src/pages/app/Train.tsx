@@ -316,50 +316,71 @@ export function Train() {
   }
 
   return (
-    <div className="py-6">
-      <h1 className="text-2xl font-bold text-gray-900">Train</h1>
-      <p className="mt-1 text-gray-600">Record a rep for a scenario (90s max).</p>
-
-      <div className="mt-6">
-        <label className="block text-sm font-medium text-gray-700">Scenario</label>
-        <select
-          value={selectedScenarioId}
-          onChange={(e) => setSelectedScenarioId(e.target.value)}
-          className="mt-1 block w-full max-w-xs rounded border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          {scenarios.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.title}
-            </option>
-          ))}
-        </select>
+    <div className="py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Train</h1>
+        <p className="mt-2 text-lg text-gray-600">Practice your communication skills with AI-powered feedback.</p>
       </div>
 
-      {status === 'idle' && (
-        <div className="mt-6 rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
-          {reminderLoading ? (
-            <span>Loading focus…</span>
-          ) : previousFocus ? (
-            <>
-              <p className="font-medium text-gray-700">Primary improvement focus</p>
-              <p className="mt-1 text-gray-600">{previousFocus}</p>
-            </>
-          ) : (
-            <p>After each rep, we’ll highlight one thing to focus on next time.</p>
-          )}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+        {/* Left card: Instructional content */}
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 lg:p-8">
+          <h2 className="text-xl font-semibold text-gray-900">How to practice</h2>
+          <p className="mt-4 text-gray-700">
+            Select a scenario below and record a 90-second practice rep. Our AI will analyze your delivery and provide actionable feedback to help you improve.
+          </p>
+          <p className="mt-4 text-gray-700">
+            Focus on one improvement at a time. After each rep, we'll highlight the most impactful thing to work on next.
+          </p>
+          <div className="mt-6 h-48 rounded-lg bg-gray-100 flex items-center justify-center">
+            <span className="text-sm text-gray-400">Visual placeholder</span>
+          </div>
         </div>
-      )}
 
-      <div className="mt-6">
-        <Recorder
-          onResult={onResult}
-          disabled={status === 'uploading' || status === 'processing'}
-        />
+        {/* Right card: Recording interface */}
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 lg:p-8">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Scenario</label>
+            <select
+              value={selectedScenarioId}
+              onChange={(e) => setSelectedScenarioId(e.target.value)}
+              className="mt-2 block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {scenarios.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {status === 'idle' && (
+            <div className="mt-6 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-600">
+              {reminderLoading ? (
+                <span>Loading focus…</span>
+              ) : previousFocus ? (
+                <>
+                  <p className="font-medium text-gray-700">Primary improvement focus</p>
+                  <p className="mt-1 text-gray-600">{previousFocus}</p>
+                </>
+              ) : (
+                <p>After each rep, we'll highlight one thing to focus on next time.</p>
+              )}
+            </div>
+          )}
+
+          <div className="mt-6">
+            <Recorder
+              onResult={onResult}
+              disabled={status === 'uploading' || status === 'processing'}
+            />
+          </div>
+        </div>
       </div>
 
       {status === 'feedback' && feedback && (
-        <div className="mt-6 rounded border border-green-200 bg-green-50 p-4">
-          <p className="font-medium text-gray-900">Feedback</p>
+        <div className="mt-8 rounded-xl border border-green-200 bg-green-50 p-6">
+          <p className="text-lg font-semibold text-gray-900">Feedback</p>
           {(() => {
             const raw = feedback.raw as { transcript_focus?: { primary_focus?: string; secondary_tips?: string[] } } | null | undefined
             const tf = raw?.transcript_focus
@@ -409,7 +430,7 @@ export function Train() {
           {feedback.score != null && (
             <p className="mt-2 font-medium text-gray-900">Score: {feedback.score}/10</p>
           )}
-          <div className="mt-3 flex gap-2">
+          <div className="mt-6 flex flex-wrap gap-3">
             <button
               type="button"
               onClick={() => {
@@ -418,13 +439,13 @@ export function Train() {
                 setStatusMessage('')
                 setMoreTipsOpen(false)
               }}
-              className="rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700"
+              className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 shadow-sm"
             >
               Record another
             </button>
             <Link
               to="/app/history"
-              className="inline-block rounded border border-gray-300 bg-white px-3 py-1.5 text-gray-700 hover:bg-gray-50"
+              className="inline-block rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Go to history
             </Link>
@@ -433,8 +454,8 @@ export function Train() {
       )}
 
       {status !== 'idle' && status !== 'feedback' && (
-        <div className="mt-6 rounded border border-gray-200 bg-gray-50 p-4">
-          <p className="font-medium text-gray-900">
+        <div className="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-6">
+          <p className="text-lg font-semibold text-gray-900">
             {status === 'error' && statusMessage.includes('Beta access required')
               ? 'Beta access required'
               : status === 'error'
@@ -448,7 +469,7 @@ export function Train() {
               <p className="text-gray-600">This account is not whitelisted yet.</p>
               <Link
                 to="/request-access"
-                className="mt-2 inline-block rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700"
+                className="mt-3 inline-block rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 shadow-sm"
               >
                 Request access
               </Link>
@@ -463,7 +484,7 @@ export function Train() {
                     setStatus('idle')
                     setStatusMessage('')
                   }}
-                  className="mt-2 rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700"
+                  className="mt-3 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 shadow-sm"
                 >
                   Retry (record new rep)
                 </button>

@@ -5,7 +5,24 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        brand: {
+          ivory: '#FFF9C4',
+          blue: '#60A5FA',
+          purple: '#A78BFA',
+          pink: '#F472B6',
+        },
+      },
+    },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        '.bg-brand-gradient': {
+          'background-image': 'linear-gradient(to right, #60A5FA, #A78BFA, #F472B6)',
+        },
+      })
+    },
+  ],
 }
