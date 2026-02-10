@@ -15,7 +15,7 @@ export function WhatIs() {
         <meta property="og:description" content={WHAT_IS_DESCRIPTION} />
       </Helmet>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-indigo-50/50 to-transparent px-4 py-16 sm:py-20">
+      <section className="relative overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-16 sm:py-20">
         <div className="mx-auto max-w-6xl">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
             What is Cognify?
@@ -29,7 +29,7 @@ export function WhatIs() {
           </p>
           <Link
             to="/register"
-            className="mt-8 inline-block rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
+            className="mt-8 inline-block rounded-lg bg-brand-gradient px-6 py-3 font-semibold text-brand-ivory hover:opacity-90 transition-opacity"
           >
             Start training
           </Link>
@@ -55,8 +55,8 @@ export function WhatIs() {
       </section>
 
       {/* Why existing tools fall short */}
-      <section className="bg-gradient-to-b from-gray-50/80 to-transparent px-4 py-16 sm:py-20">
-        <div className="mx-auto max-w-6xl">
+      <section className="px-4 py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl rounded-xl border border-gray-200 bg-gray-50 p-6 sm:p-8">
           <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
             Why existing tools fall short
           </h2>
@@ -92,7 +92,7 @@ export function WhatIs() {
           </p>
           <Link
             to="/register"
-            className="mt-10 inline-block rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
+            className="mt-10 inline-block rounded-lg bg-brand-gradient px-6 py-3 font-semibold text-brand-ivory hover:opacity-90 transition-opacity"
           >
             Start training
           </Link>

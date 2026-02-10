@@ -15,12 +15,12 @@ export function Home() {
         <meta property="og:description" content={HOME_DESCRIPTION} />
       </Helmet>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-indigo-50/50 to-transparent px-4 py-16 sm:py-24">
+      <section className="relative overflow-hidden bg-brand-gradient px-4 py-16 sm:py-24">
         <div className="mx-auto max-w-6xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
             One rep closer to clarity.
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 sm:text-xl">
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-brand-ivory sm:text-xl">
             Cognify is built for real-time speaking under pressure—the unscripted,
             time-constrained moments where you’re actually evaluated: interviews, client
             conversations, sales discussions, and leadership updates. Not a course. A
@@ -29,13 +29,13 @@ export function Home() {
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               to="/register"
-              className="w-full rounded-lg bg-indigo-600 px-6 py-3 text-center font-semibold text-white shadow-sm hover:bg-indigo-700 sm:w-auto"
+              className="w-full rounded-lg bg-brand-gradient px-6 py-3 text-center font-semibold text-brand-ivory hover:opacity-90 transition-opacity sm:w-auto border border-white/40"
             >
               Start training
             </Link>
             <Link
               to="/what-is-cognify"
-              className="w-full rounded-lg border border-gray-300 bg-white px-6 py-3 text-center font-medium text-gray-700 hover:bg-gray-50 sm:w-auto"
+              className="w-full rounded-lg border border-white/40 bg-white px-6 py-3 text-center font-medium text-gray-900 hover:bg-white/90 sm:w-auto"
             >
               What is Cognify?
             </Link>
@@ -65,8 +65,8 @@ export function Home() {
       </section>
 
       {/* Who it’s for */}
-      <section className="bg-gradient-to-b from-gray-50/80 to-transparent px-4 py-16 sm:py-20">
-        <div className="mx-auto max-w-6xl">
+      <section className="px-4 py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl rounded-xl border border-gray-200 bg-gray-50 p-6 sm:p-8">
           <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
             Built for situations where speaking is tested and least often trained.
           </h2>
@@ -87,7 +87,7 @@ export function Home() {
 
       {/* CTA */}
       <section className="px-4 py-16 sm:py-20">
-        <div className="mx-auto max-w-3xl rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 px-6 py-12 text-center sm:px-12 sm:py-16">
+        <div className="mx-auto max-w-3xl rounded-xl border border-gray-200 bg-gray-50 p-6 text-center sm:p-8">
           <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
             Ready to train?
           </h2>
@@ -96,7 +96,7 @@ export function Home() {
           </p>
           <Link
             to="/register"
-            className="mt-8 inline-block rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
+            className="mt-8 inline-block rounded-lg bg-brand-gradient px-6 py-3 font-semibold text-brand-ivory hover:opacity-90 transition-opacity"
           >
             Start training
           </Link>

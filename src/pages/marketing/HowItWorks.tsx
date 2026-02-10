@@ -15,7 +15,7 @@ export function HowItWorks() {
         <meta property="og:description" content={HOW_DESCRIPTION} />
       </Helmet>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-indigo-50/50 to-transparent px-4 py-16 sm:py-20">
+      <section className="relative overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-16 sm:py-20">
         <div className="mx-auto max-w-6xl">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
             How it works
@@ -28,7 +28,7 @@ export function HowItWorks() {
           </p>
           <Link
             to="/register"
-            className="mt-8 inline-block rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
+            className="mt-8 inline-block rounded-lg bg-brand-gradient px-6 py-3 font-semibold text-brand-ivory hover:opacity-90 transition-opacity"
           >
             Start training
           </Link>
@@ -58,8 +58,8 @@ export function HowItWorks() {
       </section>
 
       {/* Session flow */}
-      <section className="bg-gradient-to-b from-gray-50/80 to-transparent px-4 py-16 sm:py-20">
-        <div className="mx-auto max-w-6xl">
+      <section className="px-4 py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl rounded-xl border border-gray-200 bg-gray-50 p-6 sm:p-8">
           <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
             Practice, feedback, and improvement
           </h2>
@@ -100,13 +100,13 @@ export function HowItWorks() {
             transfers directly to real conversations rather than staying confined to the
             app.
           </p>
-          <div className="mt-14 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 px-6 py-10 sm:px-12 sm:py-12">
+          <div className="mt-14 rounded-xl border border-gray-200 bg-gray-50 p-6 sm:p-8">
             <p className="text-lg font-medium text-gray-900">
               Ready to try it? Create an account and start your first speaking rep.
             </p>
             <Link
               to="/register"
-              className="mt-6 inline-block rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
+              className="mt-6 inline-block rounded-lg bg-brand-gradient px-6 py-3 font-semibold text-brand-ivory hover:opacity-90 transition-opacity"
             >
               Start training
             </Link>

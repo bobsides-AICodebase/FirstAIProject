@@ -15,7 +15,7 @@ export function WhoItsFor() {
         <meta property="og:description" content={WHO_DESCRIPTION} />
       </Helmet>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-indigo-50/50 to-transparent px-4 py-16 sm:py-20">
+      <section className="relative overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-16 sm:py-20">
         <div className="mx-auto max-w-6xl">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
             Who it’s for
@@ -29,7 +29,7 @@ export function WhoItsFor() {
           </p>
           <Link
             to="/register"
-            className="mt-8 inline-block rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
+            className="mt-8 inline-block rounded-lg bg-brand-gradient px-6 py-3 font-semibold text-brand-ivory hover:opacity-90 transition-opacity"
           >
             Start training
           </Link>
@@ -43,7 +43,7 @@ export function WhoItsFor() {
             Speaking under pressure, across contexts
           </h2>
           <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-2">
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
               <h3 className="text-xl font-semibold text-gray-900">
                 Interviews and career conversations
               </h3>
@@ -54,7 +54,7 @@ export function WhoItsFor() {
                 judgment rather than listing experience.
               </p>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
               <h3 className="text-xl font-semibold text-gray-900">
                 Sales and client conversations
               </h3>
@@ -65,7 +65,7 @@ export function WhoItsFor() {
                 in language decision-makers care about.
               </p>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
               <h3 className="text-xl font-semibold text-gray-900">
                 Consulting and leadership communication
               </h3>
@@ -76,7 +76,7 @@ export function WhoItsFor() {
                 as conversations evolve.
               </p>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
               <h3 className="text-xl font-semibold text-gray-900">
                 Translating complex ideas
               </h3>
@@ -89,7 +89,7 @@ export function WhoItsFor() {
           </div>
           <Link
             to="/register"
-            className="mt-10 inline-block rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
+            className="mt-10 inline-block rounded-lg bg-brand-gradient px-6 py-3 font-semibold text-brand-ivory hover:opacity-90 transition-opacity"
           >
             Start training
           </Link>
