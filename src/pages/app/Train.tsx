@@ -316,20 +316,20 @@ export function Train() {
   }
 
   return (
-    <div className="py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Train</h1>
-        <p className="mt-2 text-lg text-gray-600">Practice your communication skills with AI-powered feedback.</p>
-      </div>
+    <div className="py-16 sm:py-20">
+      <section className="mb-12">
+        <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Train</h1>
+        <p className="mt-2 max-w-2xl text-lg text-gray-600">Practice your communication skills with AI-powered feedback.</p>
+      </section>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
         {/* Left card: Instructional content */}
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 lg:p-8">
-          <h2 className="text-xl font-semibold text-gray-900">How to practice</h2>
-          <p className="mt-4 text-gray-700">
+          <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">How to practice</h2>
+          <p className="mt-4 text-lg text-gray-600">
             Select a scenario below and record a 90-second practice rep. Our AI will analyze your delivery and provide actionable feedback to help you improve.
           </p>
-          <p className="mt-4 text-gray-700">
+          <p className="mt-4 text-lg text-gray-600">
             Focus on one improvement at a time. After each rep, we'll highlight the most impactful thing to work on next.
           </p>
           <div className="mt-6 h-48 rounded-lg bg-gray-100 flex items-center justify-center">
@@ -355,7 +355,7 @@ export function Train() {
           </div>
 
           {status === 'idle' && (
-            <div className="mt-6 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-600">
+            <div className="mt-6 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
               {reminderLoading ? (
                 <span>Loading focus…</span>
               ) : previousFocus ? (
@@ -376,11 +376,11 @@ export function Train() {
             />
           </div>
         </div>
-      </div>
+      </section>
 
       {status === 'feedback' && feedback && (
-        <div className="mt-8 rounded-xl border border-green-200 bg-green-50 p-6">
-          <p className="text-lg font-semibold text-gray-900">Feedback</p>
+        <div className="mt-12 rounded-xl border border-green-200 bg-green-50 p-6">
+          <p className="text-2xl font-bold text-gray-900 sm:text-3xl">Feedback</p>
           {(() => {
             const raw = feedback.raw as { transcript_focus?: { primary_focus?: string; secondary_tips?: string[] } } | null | undefined
             const tf = raw?.transcript_focus
@@ -454,8 +454,8 @@ export function Train() {
       )}
 
       {status !== 'idle' && status !== 'feedback' && (
-        <div className="mt-8 rounded-xl border border-gray-200 bg-gray-50 p-6">
-          <p className="text-lg font-semibold text-gray-900">
+        <div className="mt-12 rounded-xl border border-gray-200 bg-gray-50 p-6">
+          <p className="text-2xl font-bold text-gray-900 sm:text-3xl">
             {status === 'error' && statusMessage.includes('Beta access required')
               ? 'Beta access required'
               : status === 'error'
