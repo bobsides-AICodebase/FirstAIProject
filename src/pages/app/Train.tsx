@@ -332,9 +332,14 @@ export function Train() {
           <p className="mt-4 text-lg text-gray-600">
             Focus on one improvement at a time. After each rep, we'll highlight the most impactful thing to work on next.
           </p>
-          <div className="mt-6 h-48 rounded-lg bg-gray-100 flex items-center justify-center">
-            <span className="text-sm text-gray-400">Visual placeholder</span>
+          <div className="mt-6 overflow-hidden rounded-lg">
+            <img src="/train-hero.jpeg"
+                alt="Cognify Training Example"
+                className="w-full object-cover"
+                style={{ aspectRatio: '16/9' }}
+              />
           </div>
+
         </div>
 
         {/* Right card: Recording interface */}
